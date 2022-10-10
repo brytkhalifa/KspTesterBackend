@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# ksp tester
+
+# $1= your own vm ,  $2= file to test
+
+#if [[ $ARGC -le 1 ]]; then
+ #   echo -e "usage:\t kspTester <your own njvm> <file>"
+#fi
+
+FOUND=0
+
+## check if the file exits
+
+if [[ -e "$2" ]]; then
+    ./njvm $2 > ~/output1
+    ./$1 $2 > ~/output2
+    FOUND=1
+else
+    echo -e "file doesn't exist"
+    exit
+fi
+
+if [[ $FOUND -eq 1 ]]; then
+    DIFF=$(diff ~/output1 ~/output2)
+
+    if [ -z "$DIFF" ]; then
+        echo -e "Es gibt kein unterschiedlich; )"
+    else
+        echo -e "Shuttt fehler fehler:\n\n"
+        echo -e "$DIFF"
+    fi
+
+    rm ~/output1 ~/output2
+fi
+

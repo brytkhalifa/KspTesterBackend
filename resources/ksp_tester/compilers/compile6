@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#compiler6
+
+if [ -e "$1.asm" ]; then
+	../resources/compilers/nja6 $1.asm $1
+elif [ -e "$1.nj" ]; then
+	../resources/compilers/njc6 $1.nj --output $1.asm
+	../resources/compilers/nja6 $1.asm $1
+else
+	echo "nothing to do"
+fi
