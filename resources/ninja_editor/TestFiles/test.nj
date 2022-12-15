@@ -1,0 +1,4 @@
+void main() {
+    local Integer a;
+    a = 5 * (a + 3);
+}

@@ -3,6 +3,7 @@
 namespace App\MyBundles;
 
 use App\MyBundles\Executer;
+use Monolog\Logger;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class NinjaUtils
@@ -14,11 +15,12 @@ class NinjaUtils
     public const NINJA_FILE_PATH = '../resources/ninja_editor/nj_files/';
     public const ASM_FILE_PATH = '../resources/ninja_editor/asm_files/';
     public const BIN_FILE_PATH = '../resources/ninja_editor/bin_files/';
+    public const TEST_FILES_PATH = '../resources/ninja_editor/TestFiles/';
     public const NINJA_EXTENSION = 'nj';
     public const ASM_EXTENSION = 'asm';
     public const BIN_EXTENSION = 'bin';
     public const UPLOAD_DIR = '../resources/ksp_tester/uploads/';
-    #########################################
+    ############################ref_uploads#############
     public const REF_FILE_PATH = '../resources/ksp_tester/references/refnjvm';
     public const REF_UPLOAD_DIR = '../resources/ksp_tester/ref_uploads/';
 
@@ -96,38 +98,45 @@ class NinjaUtils
         Executer::execute($commands);
     }
 
+    public static function getDirectoryContents(string $dirFullPath)
+    {
+        $command  = [
+            'ls',
+            $dirFullPath
+        ];
+        return array_filter(explode("\n", Executer::execute($command)));
+    }
     /**
      * runBinary
      *
      * @param  string $referenceFile
      * @param string $testFile
-     * @param  string $params
+     * @param  string $arguments
      * @return string
      */
-    public static function runReferenceBin(string $file,  int $version, string $params, array $data)
+    public static function runReferenceBin(string $file,  int $version, string $arguments, array $data)
     {
         $referenceBin = self::REF_FILE_PATH . $version;
-        return self::runBin($file, $referenceBin, $params, $data);
+        return self::runBin($file, $referenceBin, $arguments, $data);
     }
 
 
-    public static function runBin(string $binFile, string $reference, string $params, array $data)
+    public static function runBin(string $binFile, string $reference, string $arguments, array $data)
     {
         if (
             $data === []
         ) {
-            $command  = sprintf("echo %s | %s %s", $params, $reference, $binFile);
+            $command  = sprintf("echo %s | %s %s", $arguments, $reference, $binFile);
         } else {
             $command = sprintf(
                 "%s echo %s | %s %s %s",
                 self::getULimit_Cmd($data['heapSize']),
-                $params,
+                $arguments,
                 $reference,
                 $binFile,
                 self::getGcCommand($data['stackSize'], $data['heapSize'], $data['gcstats'], $data['gcpurge'])
             );
         }
-        echo "\n". $command . "\n";
         return Executer::executeFromCommandLine($command);
     }
 
@@ -281,7 +290,7 @@ class NinjaUtils
         return "%s echo %s | %s %s %s";
         /*
          * getUlimit_cmd
-         * params
+         * arguments
          * ./njvm
          * .nj file
          * gc_command

@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\MyBundles\FileUtils;
 use App\MyBundles\Ninja;
+use App\MyBundles\NinjaUtils;
 use Exception;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,6 +34,34 @@ class NinjaController
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
     }
+
+
+    #[Route('/files', name: 'Get File List', methods: ['GET'])]
+    public function getTestFiles(Request $request)
+    {
+        try {
+            $ninja = new Ninja($request);
+            $testFiles = $ninja->getTestFilesList();
+            //var_dump($testFiles);
+            $response = new JsonResponse($testFiles);
+            return $response;
+        } catch (Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[Route('/files/{filename}', name: 'Get a Test File', methods: ['GET'])]
+    public function getTestFile(Request $request, string $filename)
+    {
+        try {
+            $fileContent = FileUtils::getContents(NinjaUtils::TEST_FILES_PATH . $filename);
+            $response =  new JsonResponse(implode("", $fileContent));
+            return $response;
+        } catch (Exception $e) {
+            return new JsonResponse(['error' => $filename . " Existiert nicht"], 400);
+        }
+    }
+
 
     #[Route('/download/nj', name: 'Download ninja file', methods: ['GET'])]
     /**

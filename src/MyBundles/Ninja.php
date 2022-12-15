@@ -57,6 +57,11 @@ class Ninja
         return NinjaUtils::getAsmContents($this->getAsmFileFullPath());
     }
 
+    public function getTestFilesList () {
+        return NinjaUtils::getDirectoryContents(NinjaUtils::TEST_FILES_PATH);
+    }
+
+   
     /**
      * Handles everything needed to download the asm file and returns the path of the asm file
      * @return string the full path of the asm file

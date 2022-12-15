@@ -29,6 +29,7 @@ class KspTester
      */
     public function test(UploadedFile $testFile, UploadedFile $userNjvmFile, int $version, string $ip, string $parameter = "1 2 3 4 5 6 7 8 9",  array $garbageCollectionData = [])
     {
+    
         // get extension and check extension
         if (($extension = NinjaUtils::isValidExtension($testFile)) === false) {
             throw new Exception("Invalid extention  $testFile");
