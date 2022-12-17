@@ -8,7 +8,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class NinjaUtils
 {
-    private const NJ_CODE_START = 110;
+    private const NJ_CODE_START_V7_TO_V8 = 110;
+    private const NJ_CODE_START_V4_TO_V6 = 83;
     private const MAX_FILE_SIZE = 134217728;
     public const NJ_ASSEMBLER_FILE = '../resources/ninja_editor/compilers/nja';
     public const NJ_COMPILER_FILE = '../resources/ninja_editor/compilers/njc';
@@ -141,10 +142,16 @@ class NinjaUtils
      * @return string the contents of the file needed to display in the ninja editor.
      * @throws Exception when the file is not available
      */
-    public static function getAsmContents(string $file)
+    public static function getAsmContents(string $file, int $version, int $shortenCode)
     {
-        $contents = FileUtils::getContents($file);
-        $writtencode = array_slice($contents, self::NJ_CODE_START);
+        $writtencode = FileUtils::getContents($file);
+        if ($shortenCode) {
+            if ($version >= 7) {
+                $writtencode = array_slice($writtencode, self::NJ_CODE_START_V7_TO_V8);
+            } else {
+                $writtencode = array_slice($writtencode, self::NJ_CODE_START_V4_TO_V6);
+            }
+        }
         $writtencode =  implode("", $writtencode);
         return $writtencode;
     }

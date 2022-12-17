@@ -4,7 +4,6 @@ namespace App\MyBundles;
 
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Process\Process;
 
 /**
  * Ninja
@@ -21,16 +20,18 @@ class Ninja
     private string $ninjaFileName;
     private string $asmFileName;
     private string $binFileName;
+    private int $version;
 
     /**
      * __construct
      * creates the default names of the files based on the Ip address
-     * @param  Request $request The request from the router. 
+     * @param  string $ip The request from the router. 
+     * @param  int $version The request from the router. 
      */
-    public function __construct(Request $request)
+    public function __construct(string $ip, int $version = 8)
     {
-        $this->address = $request->getClientIp();
-        $this->request = $request;
+        $this->address = $ip;
+        $this->version = $version;
         $this->ninjaFileName = NinjaUtils::attachNinjaExtension($this->address);
         $this->asmFileName =  NinjaUtils::attachAsmExtension($this->address);
         $this->binFileName =  NinjaUtils::attachBinExtension($this->address);
@@ -38,30 +39,27 @@ class Ninja
 
     /**
      * compiles the ninja file to asm file and returns its content
-     *
+     * 
+     * @param string $content
      * @return string the content of the asm file
      * @throws Exception
      */
-    public function getCompiledAsm()
+    public function getCompiledAsm(string $content, int $shortenCode)
     {
-        $body =  ($this->request->toArray());
-        if (!array_key_exists('value', $body)) {
-            throw new Exception('No value to compile');
-        }
-        $content = $body['value'];
         // write the value to the file
         FileUtils::writeToFile($content, $this->getNinjaFileFullPath());
         // compile the nj file to asm
-        NinjaUtils::compile($this->getNinjaFileFullPath(), $this->getAsmFileFullPath(), 8);
+        NinjaUtils::compile($this->getNinjaFileFullPath(), $this->getAsmFileFullPath(), $this->version);
         // return contents of the asm file 
-        return NinjaUtils::getAsmContents($this->getAsmFileFullPath());
+        return NinjaUtils::getAsmContents($this->getAsmFileFullPath(), $this->version, $shortenCode);
     }
 
-    public function getTestFilesList () {
+    public function getTestFilesList()
+    {
         return NinjaUtils::getDirectoryContents(NinjaUtils::TEST_FILES_PATH);
     }
 
-   
+
     /**
      * Handles everything needed to download the asm file and returns the path of the asm file
      * @return string the full path of the asm file

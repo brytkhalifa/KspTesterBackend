@@ -15,18 +15,27 @@ use Symfony\Component\Routing\Annotation\Route;
 class NinjaController
 {
 
-    #[Route('/compile', name: 'compile', methods: ['POST'])]
+    #[Route('/compile/{version}/{shortenCode}', name: 'compile', methods: ['POST'])]
     /**
      * compile
      *
      * @param  mixed $request
      * @return Response|JsonResponse 
      */
-    public function compile(Request $request)
+    public function compile(Request $request, int $version, int $shortenCode)
     {
         try {
-            $ninja = new Ninja($request);
-            $compiled = $ninja->getCompiledAsm(); // create 
+            $body =  ($request->toArray());
+            if (!array_key_exists('value', $body)) {
+                throw new Exception('No value to compile');
+            }
+
+            $njCode = $body['value'];
+            $ip = $request->getClientIp();
+
+            $ninja = new Ninja($ip, $version);
+            $compiled = $ninja->getCompiledAsm($njCode, $shortenCode);
+
             $response =  new Response($compiled);
             $response->headers->set('Content-Type', 'text/plain');
             return $response;
@@ -40,7 +49,8 @@ class NinjaController
     public function getTestFiles(Request $request)
     {
         try {
-            $ninja = new Ninja($request);
+            $ip = $request->getClientIp();
+            $ninja = new Ninja($ip);
             $testFiles = $ninja->getTestFilesList();
             //var_dump($testFiles);
             $response = new JsonResponse($testFiles);
@@ -54,6 +64,7 @@ class NinjaController
     public function getTestFile(Request $request, string $filename)
     {
         try {
+            $ip = $request->getClientIp();
             $fileContent = FileUtils::getContents(NinjaUtils::TEST_FILES_PATH . $filename);
             $response =  new JsonResponse(implode("", $fileContent));
             return $response;
@@ -73,7 +84,8 @@ class NinjaController
     public function downloadNinja(Request $request)
     {
         try {
-            $ninja = new Ninja($request);
+            $ip = $request->getClientIp();
+            $ninja = new Ninja($ip);
             $path = $ninja->handleNinjaDownload();
             return new BinaryFileResponse($path);
         } catch (Exception $e) {
@@ -91,10 +103,10 @@ class NinjaController
     public function downloadAsm(Request $request)
     {
         try {
-            $ninja = new Ninja($request);
+            $ip = $request->getClientIp();
+            $ninja = new Ninja($ip);
             $path = $ninja->handleAsmDownload();
             return new BinaryFileResponse($path);
-            
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
@@ -110,7 +122,8 @@ class NinjaController
     public function downloadBin(Request $request)
     {
         try {
-            $ninja = new Ninja($request);
+            $ip = $request->getClientIp();
+            $ninja = new Ninja($ip);
             $path = $ninja->handleBinDownload();
             return new BinaryFileResponse($path);
         } catch (Exception $e) {
