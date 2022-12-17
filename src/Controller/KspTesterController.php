@@ -13,10 +13,13 @@ use Symfony\Component\Routing\Annotation\Route;
 class KspTesterController
 {
     #[Route('/getVersionFiles/{version}', name: 'Get Version Files', methods: ['GET'])]
-    public function downloadAsm(int $version)
+    public function downloadAsm(Request $request, int $version)
     {
         try {
-            return new JsonResponse((new KspTester())->getFileNameByVersion($version));
+            $ip = $request->getClientIp();
+            $tester = new KspTester($version, $ip);
+            $res = $tester->getFileNameByVersion($version);
+            return new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
@@ -29,19 +32,25 @@ class KspTesterController
 
         try {
 
-            $testFile = $request->files->get('testFile');
-
-            $njvmFile = $request->files->get('njvmFile');
+            $userTestFile = $request->files->get('testFile');
+            $userNjvmFile = $request->files->get('njvmFile');
 
             $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
-            if (isset($testFile) === false) {
+
+            if (isset($userTestFile) === false) {
                 throw new Exception('Test File not provided');
             }
-            if (isset($njvmFile) === false) {
+            if (isset($userNjvmFile) === false) {
                 throw new Exception('Reference File not provided');
             }
             $ip = $request->getClientIp();
-            $res  = (new KspTester())->test($testFile, $njvmFile, $version, $ip, $arguments);
+            $tester = new KspTester($version, $ip);
+            $res = $tester
+                ->withUserTestFile($userTestFile)
+                ->withUserNjvmFile($userNjvmFile)
+                ->withArguments($arguments)
+                ->test();
+
             $res['params'] = $arguments;
             return  new JsonResponse(json_decode(json_encode($res)));
         } catch (Exception $e) {
@@ -56,13 +65,13 @@ class KspTesterController
 
         // echo "$version, $gcstats, $gcpurge, $stack, $heap";
         try {
-            $testFile = $request->files->get('testFile');
+            $userTestFile = $request->files->get('testFile');
 
-            $njvmFile = $request->files->get('njvmFile');
-            if (isset($testFile) === false) {
+            $userNjvmFile = $request->files->get('njvmFile');
+            if (isset($userTestFile) === false) {
                 throw new Exception('Test File not provided');
             }
-            if (isset($njvmFile) === false) {
+            if (isset($userNjvmFile) === false) {
                 throw new Exception('Reference File not provided');
             }
             $ip = $request->getClientIp();
@@ -75,29 +84,32 @@ class KspTesterController
                 'gcstats' => $gcstats ? true : false,
                 'gcpurge' => $gcpurge ? true : false,
             ];
-            $res = (new KspTester())->test($testFile, $njvmFile, $version, $ip, $arguments, $data);
-            $res['heap'] = $heap;
-            $res['stack'] = $stack;
-            $res['gcstats'] = $gcstats;
+            $tester = new KspTester($version, $ip);
+            $res = $tester
+                ->withUserNjvmFile($userNjvmFile)
+                ->withUserTestFile($userTestFile)
+                ->withArguments($arguments)
+                ->withGarbageCollectionData($data)
+                ->test();
             return  new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
     }
 
-    #[Route('/test/withGC/{fileName}/{version}/{stack}/{heap}/{gcstats}/{gcpurge}', name: 'Test with Garbage Collector', methods: ['POST'])]
+    #[Route('/test/withGC/{fileName}/{version}/{stack}/{heap}/{gcstats}/{gcpurge}', name: 'Server Test with Garbage Collector', methods: ['POST'])]
     public function testFunctionalityWithGC(Request $request, string $fileName, int $version, int $stack = 64, int $heap = 8192, int $gcstats = 0, int $gcpurge = 0)
     {
         try {
-            $testFile = new UploadedFile('../resources/ksp_tester/bin_test_files/' . $fileName, $fileName);
+            $userNjvmFile = $request->files->get('njvmFile');
+            $serverTestFile = new UploadedFile(NinjaUtils::SERVER_TEST_FILES_DIR . $fileName, $fileName);
 
-            $njvmFile = $request->files->get('njvmFile');
 
-            if (isset($njvmFile) === false) {
+            if (isset($userNjvmFile) === false) {
                 throw new Exception('Reference File not provided');
             }
             $ip = $request->getClientIp();
-            $arguments = $request->get('arguments') ?? '1 2 3 4 5 6 7 8 9';
+            $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
 
 
             $data =  [
@@ -107,28 +119,42 @@ class KspTesterController
                 'gcstats' => $gcstats ? true : false,
                 'gcpurge' => $gcpurge ? true : false,
             ];
+            $tester = new KspTester($version, $ip);
+            $res = $tester
+                ->withUserNjvmFile($userNjvmFile)
+                ->withServerTestFile($serverTestFile)
+                ->withArguments($arguments)
+                ->withGarbageCollectionData($data)
+                ->test();
 
-            return  new JsonResponse((new KspTester())->test($testFile, $njvmFile, $version, $ip, $arguments, $data));
+            return  new JsonResponse((new KspTester($version, $ip))->test($serverTestFile, $userNjvmFile, $version, $ip, $arguments, $data, NinjaUtils::SERVER_TEST_FILES_DIR . $fileName));
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
     }
-    #[Route('/test/{fileName}/{version}', name: 'Test without Garbage Collector', methods: ['POST'])]
+    #[Route('/test/{fileName}/{version}', name: 'Server Test without Garbage Collector', methods: ['POST'])]
     public function testFunctionality(Request $request, string $fileName, int $version)
     {
         try {
-            $njvmFile = $request->files->get('njvmFile');
+            $userNjvmFile = $request->files->get('njvmFile');
 
-            $testFile = new UploadedFile('../resources/ksp_tester/bin_test_files/' . $fileName, $fileName);
+            $serverTestFile = new UploadedFile(NinjaUtils::SERVER_TEST_FILES_DIR . $fileName, $fileName);
+            // throw new Exception(isset($serverTestFile) ? 'set' : 'not set'); 
 
-            $arguments = $request->get('arguments') ?? '1 2 3 4 5 6 7 8 9';
+            $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
 
-            if (isset($njvmFile) === false) {
-                throw new Exception('Reference File not provided');
+            if (isset($userNjvmFile) === false) {
+                throw new Exception('NJVM File from user not provided');
             }
             $ip = $request->getClientIp();
+            $tester = new KspTester($version, $ip);
+            $res = $tester
+                ->withUserNjvmFile($userNjvmFile)
+                ->withServerTestFile($serverTestFile)
+                ->withArguments($arguments)
+                ->test();
 
-            return  new JsonResponse((new KspTester())->test($testFile, $njvmFile, $version, $ip, $arguments));
+            return  new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
