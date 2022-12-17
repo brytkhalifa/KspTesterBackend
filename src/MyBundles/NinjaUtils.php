@@ -20,6 +20,7 @@ class NinjaUtils
     public const ASM_EXTENSION = 'asm';
     public const BIN_EXTENSION = 'bin';
     public const UPLOAD_DIR = '../resources/ksp_tester/uploads/';
+    public const SERVER_TEST_FILES_DIR = '../resources/ksp_tester/bin_test_files/';
     ############################ref_uploads#############
     public const REF_FILE_PATH = '../resources/ksp_tester/references/refnjvm';
     public const REF_UPLOAD_DIR = '../resources/ksp_tester/ref_uploads/';
@@ -106,33 +107,20 @@ class NinjaUtils
         ];
         return array_filter(explode("\n", Executer::execute($command)));
     }
-    /**
-     * runBinary
-     *
-     * @param  string $referenceFile
-     * @param string $testFile
-     * @param  string $arguments
-     * @return string
-     */
-    public static function runReferenceBin(string $file,  int $version, string $arguments, array $data)
-    {
-        $referenceBin = self::REF_FILE_PATH . $version;
-        return self::runBin($file, $referenceBin, $arguments, $data);
-    }
 
 
-    public static function runBin(string $binFile, string $reference, string $arguments, array $data)
+    public static function runBin(string $binFile, string $njvmFile, string $arguments, array $data)
     {
         if (
             $data === []
         ) {
-            $command  = sprintf("echo %s | %s %s", $arguments, $reference, $binFile);
+            $command  = sprintf("echo %s | %s %s", $arguments, $njvmFile, $binFile);
         } else {
             $command = sprintf(
                 "%s echo %s | %s %s %s",
                 self::getULimit_Cmd($data['heapSize']),
                 $arguments,
-                $reference,
+                $njvmFile,
                 $binFile,
                 self::getGcCommand($data['stackSize'], $data['heapSize'], $data['gcstats'], $data['gcpurge'])
             );
@@ -283,17 +271,5 @@ class NinjaUtils
             $gcstats ? '--gcstats' : '',
             $gcpurge ? '--gcpurge' : ''
         );
-    }
-
-    public static function getBinGCRunCommand()
-    {
-        return "%s echo %s | %s %s %s";
-        /*
-         * getUlimit_cmd
-         * arguments
-         * ./njvm
-         * .nj file
-         * gc_command
-         */
     }
 }
