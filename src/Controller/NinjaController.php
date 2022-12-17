@@ -76,9 +76,7 @@ class NinjaController
             $ninja = new Ninja($request);
             $path = $ninja->handleNinjaDownload();
             return new BinaryFileResponse($path);
-            print_r("errthing is okay");
         } catch (Exception $e) {
-            print_r("in exectip");
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
     }
@@ -96,6 +94,7 @@ class NinjaController
             $ninja = new Ninja($request);
             $path = $ninja->handleAsmDownload();
             return new BinaryFileResponse($path);
+            
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
