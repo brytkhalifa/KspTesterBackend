@@ -3,7 +3,6 @@
 namespace App\MyBundles;
 
 use Exception;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Ninja
@@ -15,7 +14,6 @@ class Ninja
     private const ERROR_EXPRESSIONS = [
         'My brain just exploded. I dont know what is wrong with you code. Maybe redeclaration of a local variable?'
     ];
-    private $request;
     private string $address;
     private string $ninjaFileName;
     private string $asmFileName;
