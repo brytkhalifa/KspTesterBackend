@@ -10,7 +10,7 @@ RUN   mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
 WORKDIR /app
 COPY . /app
 
-RUN apt install zip unzip php-zip
+RUN apt install zip unzip
 RUN composer install
 
 #RUN composer require server --dev
