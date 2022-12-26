@@ -127,7 +127,7 @@ class KspTesterController
                 ->withGarbageCollectionData($data)
                 ->test();
 
-            return  new JsonResponse((new KspTester($version, $ip))->test($serverTestFile, $userNjvmFile, $version, $ip, $arguments, $data, NinjaUtils::SERVER_TEST_FILES_DIR . $fileName));
+            return  new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
