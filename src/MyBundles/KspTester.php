@@ -101,6 +101,7 @@ class KspTester
     {
         $fileStr =   Executer::executeFromCommandLine(
             'ls "$MY_VAR" | grep "$MY_VAR2" "$MY_VAR3"',
+            5,
             ['MY_VAR' => '../resources/ksp_tester/bin_test_files', 'MY_VAR2' => "-iE", 'MY_VAR3' => "^v$this->version.*"]
         );
         return array_filter(explode("\n", $fileStr));

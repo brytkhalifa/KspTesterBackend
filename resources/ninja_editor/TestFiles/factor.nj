@@ -1,0 +1,794 @@
+//
+// factor.nj -- factorize the numbers 10^n+1, n = 1..30
+//
+
+//--------------------------------------------------------------
+
+// handle list of factors
+
+type List = record {
+  Integer value;
+  List next;
+};
+
+List addToList(Integer value, List next) {
+  local List newList;
+  newList = new(List);
+  newList.value = value;
+  newList.next = next;
+  return newList;
+}
+
+List sortList(List list) {
+  local List result;
+  local List element;
+  local List p;
+  result = nil;
+  while (list != nil) {
+    element = list;
+    list = list.next;
+    if (result == nil || element.value < result.value) {
+      element.next = result;
+      result = element;
+    } else {
+      p = result;
+      while (p.next != nil && element.value >= p.next.value) {
+        p = p.next;
+      }
+      element.next = p.next;
+      p.next = element;
+    }
+  }
+  return result;
+}
+
+void showList(List list) {
+  if (list == nil) {
+    writeString("1");
+  } else {
+    while (true) {
+      writeInteger(list.value);
+      list = list.next;
+      if (list == nil) {
+        break;
+      }
+      writeString(" * ");
+    }
+  }
+  writeString("\n");
+}
+
+Integer evalList(List list) {
+  local Integer result;
+  result = 1;
+  while (list != nil) {
+    result = result * list.value;
+    list = list.next;
+  }
+  return result;
+}
+
+List fuseLists(List list1, List list2) {
+  local List element;
+  while (list1 != nil) {
+    element = list1;
+    list1 = list1.next;
+    element.next = list2;
+    list2 = element;
+  }
+  return list2;
+}
+
+//--------------------------------------------------------------
+
+// compute 10^n+1
+
+Integer computeTarget(Integer n) {
+  local Integer x;
+  local Integer i;
+  x = 1;
+  i = 0;
+  while (i < n) {
+    x = x * 10;
+    i = i + 1;
+  }
+  x = x + 1;
+  return x;
+}
+
+void testComputeTarget() {
+  writeString("computeTarget()\n");
+  writeString("---------------\n");
+  writeString("target(1) = ");
+  writeInteger(computeTarget(1));
+  writeString("\n");
+  writeString("target(2) = ");
+  writeInteger(computeTarget(2));
+  writeString("\n");
+  writeString("target(3) = ");
+  writeInteger(computeTarget(3));
+  writeString("\n");
+  writeString("target(4) = ");
+  writeInteger(computeTarget(4));
+  writeString("\n");
+  writeString("\n");
+}
+
+//--------------------------------------------------------------
+
+// build a table of small primes
+
+global Integer smallPrimesLimit;
+
+global Integer[] primes;
+global Integer numPrimes;
+
+void showSmallPrimes() {
+  local Integer i;
+  local Integer k;
+  i = 0;
+  k = 0;
+  while (i < numPrimes) {
+    writeInteger(primes[i]);
+    writeString("  ");
+    k = k + 1;
+    if (k == 8) {
+      k = 0;
+      writeString("\n");
+    }
+    i = i + 1;
+  }
+  if (k != 0) {
+    writeString("\n");
+  }
+}
+
+void enterSmallPrime(Integer p) {
+  local Integer n;
+  local Integer[] a;
+  local Integer i;
+  if (sizeof(primes) == numPrimes) {
+    n = 2 * numPrimes;
+    a = new(Integer[n]);
+    i = 0;
+    while (i < numPrimes) {
+      a[i] = primes[i];
+      i = i + 1;
+    }
+    primes = a;
+  }
+  primes[numPrimes] = p;
+  numPrimes = numPrimes + 1;
+}
+
+Boolean isPrime(Integer n) {
+  local Integer t;
+  t = 3;
+  while (t * t <= n) {
+    if (n % t == 0) {
+      return false;
+    }
+    t = t + 2;
+  }
+  return true;
+}
+
+void calcSmallPrimes(Integer limit) {
+  local Integer i;
+  smallPrimesLimit = limit;
+  primes = new(Integer[256]);
+  numPrimes = 0;
+  enterSmallPrime(2);
+  enterSmallPrime(3);
+  i = 5;
+  while (true) {
+    if (i > smallPrimesLimit) {
+      break;
+    }
+    if (isPrime(i)) {
+      enterSmallPrime(i);
+    }
+    i = i + 2;
+    if (i > smallPrimesLimit) {
+      break;
+    }
+    if (isPrime(i)) {
+      enterSmallPrime(i);
+    }
+    i = i + 4;
+  }
+}
+
+void testCalcSmallPrimes() {
+  writeString("calcSmallPrimes()\n");
+  writeString("-----------------\n");
+  writeString("primes less than or equal to 100:\n");
+  calcSmallPrimes(100);
+  showSmallPrimes();
+  writeString("number of primes less than or equal to 100: ");
+  writeInteger(numPrimes);
+  writeString("\n");
+  calcSmallPrimes(1000);
+  writeString("number of primes less than or equal to 1000: ");
+  writeInteger(numPrimes);
+  writeString("\n");
+  calcSmallPrimes(10000);
+  writeString("number of primes less than or equal to 10000: ");
+  writeInteger(numPrimes);
+  writeString("\n");
+  calcSmallPrimes(100000);
+  writeString("number of primes less than or equal to 100000: ");
+  writeInteger(numPrimes);
+  writeString("\n");
+  writeString("\n");
+}
+
+//--------------------------------------------------------------
+
+// try to find a small prime factor of a given number
+
+Integer smallPrimeFactor(Integer n) {
+  local Integer i;
+  i = 0;
+  while (i < numPrimes) {
+    if (n % primes[i] == 0) {
+      // prime factor found
+      return primes[i];
+    }
+    i = i + 1;
+  }
+  // no prime factor less than or equal to smallPrimesLimit found
+  return 0;
+}
+
+void testSmallPrimeFactor() {
+  calcSmallPrimes(10000);
+  writeString("smallPrimeFactor()\n");
+  writeString("------------------\n");
+  writeString("small prime factor of 2: ");
+  writeInteger(smallPrimeFactor(2));
+  writeString("\n");
+  writeString("small prime factor of 222: ");
+  writeInteger(smallPrimeFactor(222));
+  writeString("\n");
+  writeString("small prime factor of 17*19*23: ");
+  writeInteger(smallPrimeFactor(17*19*23));
+  writeString("\n");
+  writeString("small prime factor of 7919: ");
+  writeInteger(smallPrimeFactor(7919));
+  writeString("\n");
+  writeString("small prime factor of 987654323: ");
+  writeInteger(smallPrimeFactor(987654323));
+  writeString("\n");
+  writeString("\n");
+}
+
+//--------------------------------------------------------------
+
+// compute b^n mod m
+
+Integer powerMod(Integer b, Integer n, Integer m) {
+  local Integer a;
+  a = 1;
+  while (n != 0) {
+    if (n % 2 == 0) {
+      b = (b * b) % m;
+      n = n / 2;
+    } else {
+      a = (a * b) % m;
+      n = n - 1;
+    }
+  }
+  return a;
+}
+
+void testPowerMod() {
+  writeString("powerMod()\n");
+  writeString("----------\n");
+  writeString("2^16 mod 7: ");
+  writeInteger(powerMod(2, 16, 7));
+  writeString("\n");
+  writeString("3^10 mod 19: ");
+  writeInteger(powerMod(3, 10, 19));
+  writeString("\n");
+  writeString("123^987654323 mod 987654323: ");
+  writeInteger(powerMod(123, 987654323, 987654323));
+  writeString("\n");
+  writeString("\n");
+}
+
+//--------------------------------------------------------------
+
+// compute greatest common divisor
+
+Integer GCD(Integer a, Integer b) {
+  local Integer r;
+  if (a < 0) {
+    a = -a;
+  }
+  if (b < 0) {
+    b = -b;
+  }
+  while (b != 0) {
+    r = a % b;
+    a = b;
+    b = r;
+  }
+  return a;
+}
+
+void testGCD() {
+  writeString("GCD()\n");
+  writeString("-----\n");
+  writeString("GCD(3*5*5*11*37, 2*2*5*37*53) = ");
+  writeInteger(GCD(3*5*5*11*37, 2*2*5*37*53));
+  writeString("\n");
+  writeString("\n");
+}
+
+//--------------------------------------------------------------
+
+// Rabin-Miller test
+
+Boolean isComposite(Integer n) {
+  local Integer q;
+  local Integer t;
+  local Integer i;
+  local Integer a;
+  local Integer e;
+  local Integer b;
+  q = n - 1;
+  t = 0;
+  while (q % 2 == 0) {
+    q = q / 2;
+    t = t + 1;
+  }
+  i = 0;
+  while (i < 20) {
+    a = primes[i];
+    if (a >= n) {
+      break;
+    }
+    e = 0;
+    b = powerMod(a, q, n);
+    if (b != 1) {
+      while (b != 1 && b != n - 1 && e <= t - 2) {
+        b = (b * b) % n;
+        e = e + 1;
+      }
+      if (b != n - 1) {
+        return true;
+      }
+    }
+    i = i + 1;
+  }
+  return false;
+}
+
+void testIsComposite() {
+  local Integer n;
+  local Integer k;
+  writeString("isComposite()\n");
+  writeString("-------------\n");
+  writeString("odd numbers in [3..99] which are probably prime:\n");
+  n = 3;
+  k = 0;
+  while (n < 100) {
+    if (!isComposite(n)) {
+      writeInteger(n);
+      writeString("  ");
+      k = k + 1;
+      if (k == 8) {
+        k = 0;
+        writeString("\n");
+      }
+    }
+    n = n + 2;
+  }
+  if (k != 0) {
+    writeString("\n");
+  }
+  n = 1234567;
+  while (n < 1234607) {
+    writeInteger(n);
+    writeString(" is ");
+    if (isComposite(n)) {
+      writeString("definitely composite\n");
+    } else {
+      writeString("probably prime\n");
+    }
+    n = n + 2;
+  }
+  writeString("\n");
+}
+
+//--------------------------------------------------------------
+
+Boolean provePrime(Integer n) {
+  // not implemented yet
+  return false;
+}
+
+void testProvePrime() {
+  writeString("provePrime()\n");
+  writeString("------------\n");
+  writeString("<not implemented yet>\n");
+  writeString("\n");
+}
+
+//--------------------------------------------------------------
+
+// Pollard's rho method
+
+Integer findFactor1(Integer n) {
+  local Integer y;
+  local Integer x;
+  local Integer x1;
+  local Integer k;
+  local Integer l;
+  local Integer p;
+  local Integer c;
+  local Integer g;
+  local Integer r;
+  y = 2;
+  x = 2;
+  x1 = 2;
+  k = 1;
+  l = 1;
+  p = 1;
+  c = 0;
+  while (true) {
+    x = (x * x + 1) % n;
+    p = (p * (x1 - x)) % n;
+    c = c + 1;
+    if (c == 20) {
+      g = GCD(p, n);
+      if (g > 1) {
+        break;
+      }
+      y = x;
+      c = 0;
+    }
+    k = k - 1;
+    if (k == 0) {
+      g = GCD(p, n);
+      if (g > 1) {
+        break;
+      }
+      x1 = x;
+      k = l;
+      l = 2 * l;
+      r = 0;
+      while (r < k) {
+        x = (x * x + 1) % n;
+        r = r + 1;
+      }
+      y = x;
+      c = 0;
+    }
+  }
+  do {
+    y = (y * y + 1) % n;
+    g = GCD(x1 - y, n);
+  } while (g == 1);
+  if (g < n) {
+    return g;
+  } else {
+    return 0;
+  }
+}
+
+Integer findFactor2(Integer n) {
+  local Integer y;
+  local Integer x;
+  local Integer x1;
+  local Integer k;
+  local Integer l;
+  local Integer p;
+  local Integer c;
+  local Integer g;
+  local Integer r;
+  y = 2;
+  x = 2;
+  x1 = 2;
+  k = 1;
+  l = 1;
+  p = 1;
+  c = 0;
+  while (true) {
+    x = (x * x - 1) % n;
+    p = (p * (x1 - x)) % n;
+    c = c + 1;
+    if (c == 20) {
+      g = GCD(p, n);
+      if (g > 1) {
+        break;
+      }
+      y = x;
+      c = 0;
+    }
+    k = k - 1;
+    if (k == 0) {
+      g = GCD(p, n);
+      if (g > 1) {
+        break;
+      }
+      x1 = x;
+      k = l;
+      l = 2 * l;
+      r = 0;
+      while (r < k) {
+        x = (x * x - 1) % n;
+        r = r + 1;
+      }
+      y = x;
+      c = 0;
+    }
+  }
+  do {
+    y = (y * y - 1) % n;
+    g = GCD(x1 - y, n);
+  } while (g == 1);
+  if (g < n) {
+    return g;
+  } else {
+    return 0;
+  }
+}
+
+Integer findFactor3(Integer n) {
+  local Integer y;
+  local Integer x;
+  local Integer x1;
+  local Integer k;
+  local Integer l;
+  local Integer p;
+  local Integer c;
+  local Integer g;
+  local Integer r;
+  y = 2;
+  x = 2;
+  x1 = 2;
+  k = 1;
+  l = 1;
+  p = 1;
+  c = 0;
+  while (true) {
+    x = (x * x + 3) % n;
+    p = (p * (x1 - x)) % n;
+    c = c + 1;
+    if (c == 20) {
+      g = GCD(p, n);
+      if (g > 1) {
+        break;
+      }
+      y = x;
+      c = 0;
+    }
+    k = k - 1;
+    if (k == 0) {
+      g = GCD(p, n);
+      if (g > 1) {
+        break;
+      }
+      x1 = x;
+      k = l;
+      l = 2 * l;
+      r = 0;
+      while (r < k) {
+        x = (x * x + 3) % n;
+        r = r + 1;
+      }
+      y = x;
+      c = 0;
+    }
+  }
+  do {
+    y = (y * y + 3) % n;
+    g = GCD(x1 - y, n);
+  } while (g == 1);
+  if (g < n) {
+    return g;
+  } else {
+    return 0;
+  }
+}
+
+Integer findFactor(Integer n) {
+  local Integer r;
+  r = findFactor1(n);
+  if (r != 0) {
+    return r;
+  }
+  r = findFactor2(n);
+  if (r != 0) {
+    return r;
+  }
+  r = findFactor3(n);
+  return r;
+}
+
+void testFindFactor() {
+  writeString("findFactor()\n");
+  writeString("------------\n");
+  writeString("5*5*5 = ");
+  writeInteger(5*5*5);
+  writeString(" is a multiple of ");
+  writeInteger(findFactor(5*5*5));
+  writeString("\n");
+  writeString("4421*5743*7699 = ");
+  writeInteger(4421*5743*7699);
+  writeString(" is a multiple of ");
+  writeInteger(findFactor(4421*5743*7699));
+  writeString("\n");
+  writeInteger(9999000099990001);
+  writeString(" is a multiple of ");
+  writeInteger(findFactor(9999000099990001));
+  writeString("\n");
+  writeString("\n");
+}
+
+//--------------------------------------------------------------
+
+List factorize(Integer x, Boolean verbose) {
+  local List factors;
+  local Integer f;
+  local Integer f1;
+  local Integer f2;
+  local List moreFactors;
+  if (verbose) {
+    writeString("factorize(");
+    writeInteger(x);
+    writeString(")\n");
+  }
+  factors = nil;
+  while (x > 1) {
+    f = smallPrimeFactor(x);
+    if (f == 0) {
+      // no small prime factor found
+      if (x < smallPrimesLimit * smallPrimesLimit) {
+        // we know that x is prime
+        f = x;
+      } else {
+        // we don't know anything
+        break;
+      }
+    }
+    if (verbose) {
+      writeString("detected small prime factor ");
+      writeInteger(f);
+      writeString("\n");
+    }
+    factors = addToList(f, factors);
+    x = x / f;
+  }
+  if (x == 1) {
+    // x has been completely factorized
+    if (verbose) {
+      writeString("the number has been completely factorized\n");
+    }
+    return factors;
+  }
+  if (verbose) {
+    writeString("interim result:\n    the remaining factor ");
+    writeInteger(x);
+    writeString("\n    doesn't have any prime factors < ");
+    writeInteger(smallPrimesLimit);
+    writeString("\n    ");
+  }
+  if (isComposite(x)) {
+    // x is definitely composite
+    if (verbose) {
+      writeString("but is definitely composite\n");
+    }
+    f1 = findFactor(x);
+    if (f1 == 0) {
+      // cannot factorize x, give up
+      writeString("cannot factorize ");
+      writeInteger(x);
+      writeString(", giving up\n");
+      factors = addToList(x, factors);
+    } else {
+      // x = f1 * f2
+      f2 = x / f1;
+      if (verbose) {
+        writeString("this number can be split into ");
+        writeInteger(f1);
+        writeString(" and ");
+        writeInteger(f2);
+        writeString("\n");
+      }
+      moreFactors = factorize(f1, verbose);
+      factors = fuseLists(moreFactors, factors);
+      moreFactors = factorize(f2, verbose);
+      factors = fuseLists(moreFactors, factors);
+    }
+  } else {
+    // x is very probably prime
+    if (verbose) {
+      writeString("and is very probably prime\n");
+    }
+    if (provePrime(x)) {
+      if (verbose) {
+        writeString("the primality of ");
+        writeInteger(x);
+        writeString(" has been proven\n");
+      }
+    } else {
+      writeString("cannot prove the primality of ");
+      writeInteger(x);
+      writeString(", giving up\n");
+    }
+    factors = addToList(x, factors);
+  }
+  return factors;
+}
+
+void testFactorize(Boolean verbose) {
+  local List factors;
+  writeString("factorize()\n");
+  writeString("-----------\n");
+  calcSmallPrimes(7);
+  showSmallPrimes();
+  writeString("3*5*7*7*141*49 = \n");
+  factors = factorize(3*5*7*7*141*49, verbose);
+  showList(sortList(factors));
+  writeString("\n");
+}
+
+//--------------------------------------------------------------
+
+void showBar() {
+  writeString("---------------------------------");
+  writeString("-------------------------------\n");
+}
+
+void run(Boolean verbose) {
+  local Integer i;
+  local Integer x;
+  local List factors;
+  local Integer y;
+  calcSmallPrimes(10000);
+  showBar();
+  i = 1;
+  while (i <= 30) {
+    writeString("10^");
+    writeInteger(i);
+    writeString("+1 = ");
+    x = computeTarget(i);
+    writeInteger(x);
+    writeString(" = \n");
+    factors = factorize(x, verbose);
+    factors = sortList(factors);
+    showList(factors);
+    writeString("check: product = ");
+    y = evalList(factors);
+    writeInteger(y);
+    writeString("\n");
+    showBar();
+    i = i+ 1;
+  }
+}
+
+//--------------------------------------------------------------
+
+void tests(Boolean verbose) {
+  writeString("\nTests\n");
+  writeString("=====\n\n");
+  testComputeTarget();
+  testCalcSmallPrimes();
+  testSmallPrimeFactor();
+  testPowerMod();
+  testGCD();
+  testIsComposite();
+  testProvePrime();
+  testFindFactor();
+  testFactorize(verbose);
+}
+
+//--------------------------------------------------------------
+
+void main() {
+  //tests(true);
+  run(true);
+}

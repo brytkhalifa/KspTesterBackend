@@ -3,7 +3,6 @@
 namespace App\MyBundles;
 
 use App\MyBundles\Executer;
-use Monolog\Logger;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class NinjaUtils
@@ -126,13 +125,13 @@ class NinjaUtils
                 self::getGcCommand($data['stackSize'], $data['heapSize'], $data['gcstats'], $data['gcpurge'])
             );
         }
-        return Executer::executeFromCommandLine($command);
+        return Executer::executeFromCommandLine($command, 2*60);
     }
 
     public static function makeExecutable(string $file)
     {
         $command =  "chmod 755 $file";
-        return Executer::executeFromCommandLine($command);
+        return Executer::executeFromCommandLine($command, 5);
     }
 
     /**
@@ -266,7 +265,13 @@ class NinjaUtils
     public static function getULimit_Cmd(int $heapSize)
     {
         $dataLimit = self::getDataLimit($heapSize);
-        return "ulimit -SHd $dataLimit && timeout -k 9 20m";
+        return "ulimit -SHd $dataLimit && " . self::getTimeOut(3 * 60);
+    }
+
+    public static function getTimeOut(int $seconds)
+    {
+
+        return "timeout --signal=9 {$seconds}s";
     }
 
     public static function getGcCommand(int $stackSize, int $heapSize, bool $gcstats, bool $gcpurge)

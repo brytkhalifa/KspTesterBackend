@@ -1,0 +1,14 @@
+void main(){
+  local Integer r;
+  local Integer f;
+  r = readInteger();
+  f=fib_rekursiv(r);
+  
+  writeInteger(f);
+  writeCharacter('\n');
+}
+
+Integer fib_rekursiv(Integer n){
+ if(n<3) return 1;
+ else return fib_rekursiv(n-1)+fib_rekursiv(n-2);
+}

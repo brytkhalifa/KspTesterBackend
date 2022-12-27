@@ -24,12 +24,13 @@ class Executer
         return $process->getOutput();
     }
 
-    public static function executeFromCommandLine(string $command, array $arguments = [])
+    public static function executeFromCommandLine(string $command, int $timeout = 60, array $arguments = [])
     {
         $process = Process::fromShellCommandline($command);
+        $process->setTimeout($timeout);
         $process->run(null, $arguments);
         if (!$process->isSuccessful()) {
-            throw new Exception($process->getErrorOutput() . ' ' . $process->getOutput());
+            throw new Exception(sprintf("%s %s\n%s: %s", $process->getErrorOutput(), $process->getOutput(), $process->getExitCode(), $process->getExitCodeText()));
         }
         return $process->getOutput();
     }
