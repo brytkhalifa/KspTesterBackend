@@ -279,4 +279,8 @@ class NinjaUtils
             $gcpurge ? '--gcpurge' : ''
         );
     }
+    public static function getNinjaRefFile(int $version)
+    {
+        return self::REF_FILE_PATH . $version;
+    }
 }

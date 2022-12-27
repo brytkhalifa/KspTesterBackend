@@ -72,7 +72,7 @@ class Ninja
      */
     public function handleBinDownload()
     {
-        NinjaUtils::assemble($this->getAsmFileFullPath(), $this->getBinFileFullPath(), 8);
+        NinjaUtils::assemble($this->getAsmFileFullPath(), $this->getBinFileFullPath(), $this->version);
         return $this->getBinFileFullPath();
     }
     /**
@@ -105,5 +105,13 @@ class Ninja
     public function getBinFileFullPath()
     {
         return NinjaUtils::BIN_FILE_PATH . $this->binFileName;
+    }
+
+
+    public function runCode()
+    {
+        NinjaUtils::assemble($this->getAsmFileFullPath(), $this->getBinFileFullPath(), $this->version);
+        NinjaUtils::makeExecutable($this->getBinFileFullPath());
+        return NinjaUtils::runBin($this->getBinFileFullPath(), NinjaUtils::getNinjaRefFile($this->version), "1 2 3 4 5 6 7 8 9 10", []);
     }
 }

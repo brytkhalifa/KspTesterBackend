@@ -78,19 +78,38 @@ class NinjaController
         }
     }
 
+    #[Route('/run/{version}', name: 'Run Code', methods: ['GET'])]
+    /**
+     * runCode
+     *
+     * @param  Request $request
+     * @return JsonResponse
+     */
+    public function runCode(Request $request, int $version = 8)
+    {
+        $ip = $request->getClientIp();
 
-    #[Route('/download/nj', name: 'Download ninja file', methods: ['GET'])]
+        $ninja = new Ninja($ip, $version);
+        try {
+            $res = $ninja->runCode();
+            return new JsonResponse($res);
+        } catch (Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[Route('/download/nj/{version}', name: 'Download ninja file', methods: ['GET'])]
     /**
      * downloadNinja
      *
      * @param  Request $request
      * @return BinaryFileResponse
      */
-    public function downloadNinja(Request $request)
+    public function downloadNinja(Request $request, int $version)
     {
         try {
             $ip = $request->getClientIp();
-            $ninja = new Ninja($ip);
+            $ninja = new Ninja($ip, $version);
             $path = $ninja->handleNinjaDownload();
             $response =  new BinaryFileResponse($path);
             // force to download
@@ -101,18 +120,18 @@ class NinjaController
         }
     }
 
-    #[Route('/download/asm', name: 'Download Assembler file', methods: ['GET'])]
+    #[Route('/download/asm/{version}', name: 'Download Assembler file', methods: ['GET'])]
     /**
      * downloadAsm
      *
      * @param  Request $request
      * @return BinaryFileResponse
      */
-    public function downloadAsm(Request $request)
+    public function downloadAsm(Request $request, int $version = 8)
     {
         try {
             $ip = $request->getClientIp();
-            $ninja = new Ninja($ip);
+            $ninja = new Ninja($ip, $version);
             $path = $ninja->handleAsmDownload();
             $response =  new BinaryFileResponse($path);
             // force to download
@@ -123,22 +142,22 @@ class NinjaController
         }
     }
 
-    #[Route('/download/bin', name: 'Download BinaryFile file', methods: ['GET'])]
+    #[Route('/download/bin/{version}', name: 'Download BinaryFile file', methods: ['GET'])]
     /**
      * downloadBin
      *
      * @param  Request $request
      * @return BinaryFileResponse
      */
-    public function downloadBin(Request $request)
+    public function downloadBin(Request $request, int $version)
     {
         try {
             $ip = $request->getClientIp();
-            $ninja = new Ninja($ip);
+            $ninja = new Ninja($ip, $version);
             $path = $ninja->handleBinDownload();
             $response =  new BinaryFileResponse($path);
             // force to download
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT,'yourfile.bin');
+            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'yourfile.bin');
             return $response;
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
