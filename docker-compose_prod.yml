@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: .
+      target: app_php
+      dockerfile: Dockerfile_prod
+    image: ghcr.io/brytkhalifa/ksptesterbackend-php:latest
+    restart: on-failure
+    expose:
+      - "9000"
+    environment:
+      APP_ENV: prod
+      PHP_DATE_TIMEZONE: ${PHP_DATE_TIMEZONE:-UTC}
+    volumes:
+      - /ksptester/resources:/app/resources
+
+  nginx:
+    build:
+      context: .
+      target: app_nginx
+      dockerfile: Dockerfile_prod
+    image: ghcr.io/brytkhalifa/ksptesterbackend-nginx:latest
+    restart: on-failure
+    depends_on:
+      - php
+    ports:
+      - "8010:80"
