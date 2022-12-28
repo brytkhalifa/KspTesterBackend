@@ -4,5 +4,7 @@ Info : `https://symfony.com/doc/current/setup.html`
 
 
 ### Run in docker
-sudo docker build -t ksptesterbackend .
-sudo docker run -it -p 8000:8000 ksptesterbackend
+docker pull ghcr.io/brytkhalifa/ksptesterbackend-php:latest
+docker pull ghcr.io/brytkhalifa/ksptesterbackend-nginx:latest
+docker-compose -f docker-compose_prod.yml build
+docker-compose -f docker-compose_prod.yml up -d
