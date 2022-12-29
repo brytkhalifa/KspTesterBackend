@@ -1,0 +1,26 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Start containers php
+      run: docker-compose -f docker-compose_prod.yml build php
+        
+    - name: Start containers nginx
+      run: docker-compose -f docker-compose_prod.yml build nginx
+    
+    - name: Run
+      run: docker-compose -f docker-compose_prod.yml up -d
+      
+      
