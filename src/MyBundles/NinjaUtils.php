@@ -69,7 +69,7 @@ class NinjaUtils
      * @param int $version the version to be used to assemble.
      * @return void
      */
-    public static  function assemble(string $asmFile, string $binFile, int $version = 8)
+    public static function assemble(string $asmFile, string $binFile, int $version = 8)
     {
         $commands = [
             self::getNJAssemblerFile($version),
@@ -101,7 +101,7 @@ class NinjaUtils
 
     public static function getDirectoryContents(string $dirFullPath)
     {
-        $command  = [
+        $command = [
             'ls',
             $dirFullPath
         ];
@@ -114,23 +114,26 @@ class NinjaUtils
         if (
             $data === []
         ) {
-            $command  = sprintf("echo %s | %s %s", $arguments, $njvmFile, $binFile);
+            $command = sprintf("echo %s | %s %s %s", $arguments, self::getTimeOut(2 * 60), $njvmFile, $binFile);
         } else {
             $command = sprintf(
-                "%s echo %s | %s %s %s",
+                "%s echo %s |%s %s %s %s",
                 self::getULimit_Cmd($data['heapSize']),
                 $arguments,
+                self::getTimeOut(2 * 60),
                 $njvmFile,
                 $binFile,
                 self::getGcCommand($data['stackSize'], $data['heapSize'], $data['gcstats'], $data['gcpurge'])
             );
         }
-        return Executer::executeFromCommandLine($command, 2*60);
+        // info if you want to get results ouput before timeout error, then make the getTimeOut time > executer timeout time
+        //else the the output will come from symfony which doesn't include proccesed output
+        return Executer::executeFromCommandLine($command, (2 * 60) + 4);
     }
 
     public static function makeExecutable(string $file)
     {
-        $command =  "chmod 755 $file";
+        $command = "chmod 755 $file";
         return Executer::executeFromCommandLine($command, 5);
     }
 
@@ -151,7 +154,7 @@ class NinjaUtils
                 $writtencode = array_slice($writtencode, self::NJ_CODE_START_V4_TO_V6);
             }
         }
-        $writtencode =  implode("", $writtencode);
+        $writtencode = implode("", $writtencode);
         return $writtencode;
     }
 
@@ -171,7 +174,7 @@ class NinjaUtils
 
     public static function isValidFileSize(UploadedFile $file)
     {
-        $fileSize  = $file->getSize();
+        $fileSize = $file->getSize();
         return $fileSize < self::MAX_FILE_SIZE;
     }
     /**
@@ -187,7 +190,7 @@ class NinjaUtils
         return self::moveFileToDir($file, $filename, self::REF_UPLOAD_DIR);
     }
 
-    public static function moveFileToDir(UploadedFile $file, string $filename,  string $dirname)
+    public static function moveFileToDir(UploadedFile $file, string $filename, string $dirname)
     {
         $file->move($dirname, $filename);
         return sprintf('%s%s', $dirname, $filename);

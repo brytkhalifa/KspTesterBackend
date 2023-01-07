@@ -14,5 +14,6 @@ resources/ksp_tester/uploads/*.asm
 resources/ksp_tester/uploads/*.njvm
 resources/ninja_editor/asm_files/*
 resources/ninja_editor/nj_files/*
+resources/ninja_editor/bin_files/*
 resources/ksp_tester/ref_uploads/*
 ###< symfony/framework-bundle ###

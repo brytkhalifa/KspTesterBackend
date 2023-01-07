@@ -10,11 +10,11 @@ class Executer
 
     /**
      * executes process in order of the elements in the array.
-     * 
+     *
      * Forexample execute(['ls', '-l' , '/home']) will execute the process 'ls -l /home'.
-     * @return string The output of the process. 
+     * @return string The output of the process.
      */
-    public static  function execute(array $commands)
+    public static function execute(array $commands)
     {
         $process = new Process($commands);
         $process->run();
