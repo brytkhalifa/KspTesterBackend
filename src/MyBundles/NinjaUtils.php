@@ -273,8 +273,7 @@ class NinjaUtils
 
     public static function getTimeOut(int $seconds)
     {
-
-        return "timeout --signal=9 {$seconds}s";
+        return "timeout -s 9 -k $seconds $seconds";
     }
 
     public static function getGcCommand(int $stackSize, int $heapSize, bool $gcstats, bool $gcpurge)
