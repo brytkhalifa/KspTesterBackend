@@ -18,7 +18,7 @@ class KspTesterController
         try {
             $ip = $request->getClientIp();
             $tester = new KspTester($version, $ip);
-            $res = $tester->getFileNameByVersion($version);
+            $res = $tester->getFileNameByVersion();
             return new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
@@ -50,9 +50,7 @@ class KspTesterController
                 ->withUserNjvmFile($userNjvmFile)
                 ->withArguments($arguments)
                 ->test();
-
-            $res['params'] = $arguments;
-            return  new JsonResponse(json_decode(json_encode($res)));
+            return new JsonResponse(json_decode(json_encode($res)));
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
@@ -77,7 +75,7 @@ class KspTesterController
             $ip = $request->getClientIp();
             $arguments = $request->get('arguments') ?? '1 2 3 4 5 6 7 8 9';
 
-            $data =  [
+            $data = [
                 'version' => $version,
                 'stackSize' => $stack ?: 64,
                 'heapSize' => $heap ?: 8192,
@@ -91,7 +89,7 @@ class KspTesterController
                 ->withArguments($arguments)
                 ->withGarbageCollectionData($data)
                 ->test();
-            return  new JsonResponse($res);
+            return new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
@@ -112,7 +110,7 @@ class KspTesterController
             $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
 
 
-            $data =  [
+            $data = [
                 'version' => $version,
                 'stackSize' => $stack ?? 64,
                 'heapSize' => $heap ?? 8192,
@@ -127,7 +125,7 @@ class KspTesterController
                 ->withGarbageCollectionData($data)
                 ->test();
 
-            return  new JsonResponse($res);
+            return new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
@@ -154,7 +152,38 @@ class KspTesterController
                 ->withArguments($arguments)
                 ->test();
 
-            return  new JsonResponse($res);
+            return new JsonResponse($res);
+        } catch (Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[Route('/testall/{version}', name: 'Test all server files without Garbage Collector', methods: ['POST'])]
+    public function testAllFiles(Request $request, int $version)
+    {
+        try {
+
+            $userNjvmFile = $request->files->get('njvmFile');
+            $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
+
+            if (isset($userNjvmFile) === false) {
+                throw new Exception('NJVM File from user not provided');
+            }
+            $ip = $request->getClientIp();
+            $tester = new KspTester($version, $ip);
+            $serverFiles = $tester->getFileNameByVersion();
+
+            $command = $tester
+                ->withUserNjvmFile($userNjvmFile)
+                ->withArguments($arguments);
+            $res = [];
+            foreach ($serverFiles as $serverFile) {
+                $serverTestFile = new UploadedFile(NinjaUtils::SERVER_TEST_FILES_DIR . $serverFile, $serverFile);
+                $res[$serverFile] = $command
+                    ->withServerTestFile($serverTestFile)
+                    ->test();
+            }
+            return new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }

@@ -1,16 +1,19 @@
 Start dev server : `symfony server:start`
 
+OR with php dev server : `cd public && php -S localhost:8010`
+
+> :warning: the php dev server cannot rewrite or find paths with 'dot(.)' in its name such as `localhost:8080/files/testfile.php`
+
 Info : `https://symfony.com/doc/current/setup.html`
 
-
 ### Run in docker
+
 - pull php && nginx \
   docker pull ghcr.io/brytkhalifa/ksptesterbackend-php:latest \
   docker pull ghcr.io/brytkhalifa/ksptesterbackend-nginx:latest
 
-
 ```yaml
-cat <<EOT >> docker-compose_prod.yml 
+cat <<EOT >> docker-compose_prod.yml
 version: '3.8'
 services:
   php:

@@ -4,7 +4,7 @@ namespace App\MyBundles;
 
 use App\MyBundles\Executer;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-
+use Exception;
 class NinjaUtils
 {
     private const NJ_CODE_START_V7_TO_V8 = 110;
@@ -196,7 +196,7 @@ class NinjaUtils
         return sprintf('%s%s', $dirname, $filename);
     }
     /**
-     * 
+     *
      * @param UploadedFile $file
      * @param string $userIP
      * @return string a File name based on the extension and the ip address of the user.
@@ -256,9 +256,9 @@ class NinjaUtils
             $dataLimit = 2000;
         } elseif ($heapSize >= 100 && $heapSize <= 1000) {
             $dataLimit = 5000;
-        } else if ($heapSize >= 1000 && $heapSize <= 10000) {
+        } elseif ($heapSize >= 1000 && $heapSize <= 10000) {
             $dataLimit = intval($heapSize * 1.14);
-        } else if (($heapSize >= 10000) && ($heapSize <= 100000)) {
+        } elseif (($heapSize >= 10000) && ($heapSize <= 100000)) {
             $dataLimit = intval($heapSize * 1.04);
         } else {
             $dataLimit = intval($heapSize * 1.8);
@@ -289,5 +289,9 @@ class NinjaUtils
     public static function getNinjaRefFile(int $version)
     {
         return self::REF_FILE_PATH . $version;
+    }
+
+    public static function diff(string $a, string $b) {
+        //TODO
     }
 }

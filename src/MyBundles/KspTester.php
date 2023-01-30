@@ -11,7 +11,7 @@ class KspTester
     private string $extension;
     private int $version;
     private string $testBinFileLocation;
-    private string  $ip;
+    private string $ip;
     private string $arguments;
     private array $gcData;
     private string $userNjvmFileLocation;
@@ -22,7 +22,7 @@ class KspTester
         $this->version = $version;
         $this->ip = $ip;
         $this->gcData = [];
-        $this->arguments = '1 2 3 4 5 6 7 8 9';
+        $this->arguments = '1 2 3 4 5 6 7 8 9'; // set default arguments.
         $this->refNjvmFileLocation = NinjaUtils::REF_FILE_PATH . $version;
     }
 
@@ -30,7 +30,7 @@ class KspTester
     {
         $this->validateTestFile($testFile);
         // create te name of the testFile based on the ip address.
-        $filename  = NinjaUtils::getIpBasedFileName($testFile, $this->ip);
+        $filename = NinjaUtils::getIpBasedFileName($testFile, $this->ip);
         // move the testFile to the new location
         NinjaUtils::moveFileToUploadDir($testFile, $filename);
         $this->testBinFileLocation = NinjaUtils::getBinNameFromIP($this->ip);
@@ -50,7 +50,7 @@ class KspTester
         return $this;
     }
 
-   
+
 
     public function withArguments(string $arguments)
     {
@@ -69,6 +69,7 @@ class KspTester
         $userVmOutput = ''; // container for ownImplementationOutput
 
         switch ($this->extension) {
+            // intentional fall through
             case 'nj':
                 NinjaUtils::compile(NinjaUtils::getNinjaNameFromIP($this->ip), NinjaUtils::getAsmNameFromIP($this->ip), $this->version);
             case 'asm':
@@ -92,17 +93,20 @@ class KspTester
             default:
         }
 
-        //  return both outputs and an areSimilar 
         $similar = strcmp($userVmOutput, $refVmOutput) === 0;
-        return  ['implementOutput' => $userVmOutput, 'referenceOutput' => $refVmOutput, 'similar' => $similar];
+        return ['implementOutput' => $userVmOutput, 'referenceOutput' => $refVmOutput, 'similar' => $similar];
     }
 
     public function getFileNameByVersion()
     {
-        $fileStr =   Executer::executeFromCommandLine(
+        $fileStr = Executer::executeFromCommandLine(
             'ls "$MY_VAR" | grep "$MY_VAR2" "$MY_VAR3"',
-            5,
-            ['MY_VAR' => '../resources/ksp_tester/bin_test_files', 'MY_VAR2' => "-iE", 'MY_VAR3' => "^v$this->version.*"]
+            10,
+            [
+                'MY_VAR' => '../resources/ksp_tester/bin_test_files',
+                'MY_VAR2' => "-iE",
+                'MY_VAR3' => "^v$this->version.*"
+            ]
         );
         return array_filter(explode("\n", $fileStr));
     }
