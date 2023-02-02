@@ -6,6 +6,7 @@ use App\MyBundles\FileUtils;
 use App\MyBundles\Ninja;
 use App\MyBundles\NinjaUtils;
 use Exception;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class NinjaController
+class NinjaController extends AbstractController
 {
 
     #[Route('/compile/{version}/{shortenCode}', name: 'compile', methods: ['POST'])]
@@ -31,7 +32,7 @@ class NinjaController
             if ($version <= 3 || $version > 8) {
                 throw new Exception("The selected version is not supported.");
             }
-            $body =  ($request->toArray());
+            $body = ($request->toArray());
             if (!array_key_exists('value', $body)) {
                 throw new Exception('No value to compile');
             }
@@ -42,7 +43,7 @@ class NinjaController
             $ninja = new Ninja($ip, $version);
             $compiled = $ninja->getCompiledAsm($njCode, $shortenCode);
 
-            $response =  new Response($compiled);
+            $response = new Response($compiled);
             $response->headers->set('Content-Type', 'text/plain');
             return $response;
         } catch (Exception $e) {
@@ -71,7 +72,7 @@ class NinjaController
     {
         try {
             $fileContent = FileUtils::getContents(NinjaUtils::TEST_FILES_PATH . $filename);
-            $response =  new JsonResponse(implode("", $fileContent));
+            $response = new JsonResponse(implode("", $fileContent));
             return $response;
         } catch (Exception $e) {
             return new JsonResponse(['error' => $filename . " Existiert nicht"], 400);
@@ -111,7 +112,7 @@ class NinjaController
             $ip = $request->getClientIp();
             $ninja = new Ninja($ip, $version);
             $path = $ninja->handleNinjaDownload();
-            $response =  new BinaryFileResponse($path);
+            $response = new BinaryFileResponse($path);
             // force to download
             $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'yourfile.nj');
             return $response;
@@ -133,7 +134,7 @@ class NinjaController
             $ip = $request->getClientIp();
             $ninja = new Ninja($ip, $version);
             $path = $ninja->handleAsmDownload();
-            $response =  new BinaryFileResponse($path);
+            $response = new BinaryFileResponse($path);
             // force to download
             $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'yourfile.asm');
             return $response;
@@ -155,7 +156,7 @@ class NinjaController
             $ip = $request->getClientIp();
             $ninja = new Ninja($ip, $version);
             $path = $ninja->handleBinDownload();
-            $response =  new BinaryFileResponse($path);
+            $response = new BinaryFileResponse($path);
             // force to download
             $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'yourfile.bin');
             return $response;

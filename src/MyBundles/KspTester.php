@@ -60,6 +60,9 @@ class KspTester
 
     public function withGarbageCollectionData(array $gcData)
     {
+        if($this->version !== 8) {
+            throw new Exception("Garbage collection only available with version 8");
+        }
         $this->gcData = $gcData;
         return $this;
     }
