@@ -58,7 +58,8 @@ class KspTesterController extends AbstractController
             $ip = $request->getClientIp();
             $tester = new KspTester($version, $ip);
             $res = [];
-            $res[] = $tester
+            $fileName = $userTestFile->getClientOriginalName();
+            $res[$fileName] = $tester
                 ->withUserTestFile($userTestFile)
                 ->withUserNjvmFile($userNjvmFile)
                 ->withArguments($arguments)
@@ -98,7 +99,8 @@ class KspTesterController extends AbstractController
             ];
             $tester = new KspTester($version, $ip);
             $res = [];
-            $res[] = $tester
+            $fileName = $userTestFile->getClientOriginalName();
+            $res[$fileName] = $tester
                 ->withUserNjvmFile($userNjvmFile)
                 ->withUserTestFile($userTestFile)
                 ->withArguments($arguments)
