@@ -12,6 +12,7 @@
 resources/ksp_tester/uploads/*.nj
 resources/ksp_tester/uploads/*.asm
 resources/ksp_tester/uploads/*.njvm
+resources/ksp_tester/uploads/*.bin
 resources/ninja_editor/asm_files/*
 resources/ninja_editor/nj_files/*
 resources/ninja_editor/bin_files/*
