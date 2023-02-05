@@ -176,7 +176,7 @@ class NinjaController extends AbstractController
             // force to download
             $response->setContentDisposition(
                 ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                NinjaUtils::generateRandomFileName('.asm')
+                NinjaUtils::generateRandomFileName('.bin')
             );
             return $response;
         } catch (Exception $e) {
