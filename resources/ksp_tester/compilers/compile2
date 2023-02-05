@@ -1,9 +1,0 @@
-#!/bin/bash
-
-#compiler2
-
-if [ -e "$1.asm" ]; then
-	../resources/compilers/nja2 $1.asm $1
-else
-	echo "nothing to do"
-fi
