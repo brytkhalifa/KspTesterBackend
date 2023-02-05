@@ -124,7 +124,10 @@ class NinjaController extends AbstractController
             $path = $ninja->handleNinjaDownload();
             $response = new BinaryFileResponse($path);
             // force to download
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'yourfile.nj');
+            $response->setContentDisposition(
+                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                NinjaUtils::generateRandomFileName('.nj')
+            );
             return $response;
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
@@ -146,7 +149,10 @@ class NinjaController extends AbstractController
             $path = $ninja->handleAsmDownload();
             $response = new BinaryFileResponse($path);
             // force to download
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'yourfile.asm');
+            $response->setContentDisposition(
+                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                NinjaUtils::generateRandomFileName('.asm')
+            );
             return $response;
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
@@ -168,7 +174,10 @@ class NinjaController extends AbstractController
             $path = $ninja->handleBinDownload();
             $response = new BinaryFileResponse($path);
             // force to download
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'yourfile.bin');
+            $response->setContentDisposition(
+                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                NinjaUtils::generateRandomFileName('.asm')
+            );
             return $response;
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
