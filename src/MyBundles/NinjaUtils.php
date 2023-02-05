@@ -294,4 +294,7 @@ class NinjaUtils
     public static function diff(string $a, string $b) {
         //TODO
     }
+    public static function generateFileNameFromIp(string $ip) {
+        return md5($ip);
+    }
 }

@@ -29,7 +29,7 @@ class KspTesterController extends AbstractController
     public function downloadAsm(Request $request, int $version)
     {
         try {
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $tester = new KspTester($version, $ip);
             $res = $tester->getFileNameByVersion();
             return new JsonResponse($res);
@@ -55,7 +55,7 @@ class KspTesterController extends AbstractController
             if (isset($userNjvmFile) === false) {
                 throw new Exception('Reference File not provided');
             }
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $tester = new KspTester($version, $ip);
             $res = [];
             $fileName = $userTestFile->getClientOriginalName();
@@ -87,7 +87,7 @@ class KspTesterController extends AbstractController
             if (isset($userNjvmFile) === false) {
                 throw new Exception('Reference File not provided');
             }
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
 
             $data = [
@@ -125,7 +125,7 @@ class KspTesterController extends AbstractController
             if (isset($userNjvmFile) === false) {
                 throw new Exception('Reference File not provided');
             }
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
 
             $data = [
@@ -166,7 +166,7 @@ class KspTesterController extends AbstractController
             if (isset($userNjvmFile) === false) {
                 throw new Exception('NJVM File from user not provided');
             }
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $tester = new KspTester($version, $ip);
 
             $command = $tester

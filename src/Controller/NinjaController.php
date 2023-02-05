@@ -19,12 +19,12 @@ class NinjaController extends AbstractController
 
     #[Route('/compile/{version}/{shortenCode}', name: 'compile', methods: ['POST'])]
     /**
-     * compile
-     *
-     * @param  Request $request
+     * Summary of compile
+     * @param Request $request
      * @param int $version
-     * @param int $shortenCode if 1, inbuilt methods will be excluded from the asm code.
-     * @return Response|JsonResponse 
+     * @param int $shortenCode $shortenCode if 1, inbuilt methods will be excluded from the asm code.
+     * @throws Exception
+     * @return JsonResponse|Response
      */
     public function compile(Request $request, int $version, int $shortenCode)
     {
@@ -38,7 +38,7 @@ class NinjaController extends AbstractController
             }
 
             $njCode = $body['value'];
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
 
             $ninja = new Ninja($ip, $version);
             $compiled = $ninja->getCompiledAsm($njCode, $shortenCode);
@@ -53,10 +53,15 @@ class NinjaController extends AbstractController
 
 
     #[Route('/files', name: 'Get File List', methods: ['GET'])]
+    /**
+     * Summary of getTestFiles
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function getTestFiles(Request $request)
     {
         try {
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $ninja = new Ninja($ip);
             $testFiles = $ninja->getTestFilesList();
             //var_dump($testFiles);
@@ -68,6 +73,11 @@ class NinjaController extends AbstractController
     }
 
     #[Route('/files/{filename}', name: 'Get a Test File', methods: ['GET'])]
+    /**
+     * Summary of getTestFile
+     * @param string $filename
+     * @return JsonResponse
+     */
     public function getTestFile(string $filename)
     {
         try {
@@ -81,14 +91,14 @@ class NinjaController extends AbstractController
 
     #[Route('/run/{version}', name: 'Run Code', methods: ['GET'])]
     /**
-     * runCode
-     *
-     * @param  Request $request
+     * Summary of runCode
+     * @param Request $request
+     * @param int $version
      * @return JsonResponse
      */
     public function runCode(Request $request, int $version = 8)
     {
-        $ip = $request->getClientIp();
+        $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
 
         $ninja = new Ninja($ip, $version);
         try {
@@ -101,15 +111,15 @@ class NinjaController extends AbstractController
 
     #[Route('/download/nj/{version}', name: 'Download ninja file', methods: ['GET'])]
     /**
-     * downloadNinja
-     *
-     * @param  Request $request
-     * @return BinaryFileResponse
+     * Summary of downloadNinja
+     * @param Request $request
+     * @param int $version
+     * @return BinaryFileResponse|JsonResponse
      */
     public function downloadNinja(Request $request, int $version)
     {
         try {
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $ninja = new Ninja($ip, $version);
             $path = $ninja->handleNinjaDownload();
             $response = new BinaryFileResponse($path);
@@ -123,15 +133,15 @@ class NinjaController extends AbstractController
 
     #[Route('/download/asm/{version}', name: 'Download Assembler file', methods: ['GET'])]
     /**
-     * downloadAsm
-     *
-     * @param  Request $request
-     * @return BinaryFileResponse
+     * Summary of downloadAsm
+     * @param Request $request
+     * @param int $version
+     * @return BinaryFileResponse|JsonResponse
      */
     public function downloadAsm(Request $request, int $version = 8)
     {
         try {
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $ninja = new Ninja($ip, $version);
             $path = $ninja->handleAsmDownload();
             $response = new BinaryFileResponse($path);
@@ -145,15 +155,15 @@ class NinjaController extends AbstractController
 
     #[Route('/download/bin/{version}', name: 'Download BinaryFile file', methods: ['GET'])]
     /**
-     * downloadBin
-     *
-     * @param  Request $request
-     * @return BinaryFileResponse
+     * Summary of downloadBin
+     * @param Request $request
+     * @param int $version
+     * @return BinaryFileResponse|JsonResponse
      */
     public function downloadBin(Request $request, int $version)
     {
         try {
-            $ip = $request->getClientIp();
+            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $ninja = new Ninja($ip, $version);
             $path = $ninja->handleBinDownload();
             $response = new BinaryFileResponse($path);
