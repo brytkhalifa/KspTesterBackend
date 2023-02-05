@@ -60,7 +60,7 @@ class KspTester
 
     public function withGarbageCollectionData(array $gcData)
     {
-        if($this->version !== 8) {
+        if ($this->version !== 8) {
             throw new Exception("Garbage collection only available with version 8");
         }
         $this->gcData = $gcData;
@@ -74,22 +74,40 @@ class KspTester
         switch ($this->extension) {
             // intentional fall through
             case 'nj':
-                NinjaUtils::compile(NinjaUtils::getNinjaNameFromIP($this->ip), NinjaUtils::getAsmNameFromIP($this->ip), $this->version);
+                NinjaUtils::compile(
+                    NinjaUtils::getNinjaNameFromIP($this->ip),
+                    NinjaUtils::getAsmNameFromIP($this->ip),
+                    $this->version
+                );
             case 'asm':
-                NinjaUtils::assemble(NinjaUtils::getAsmNameFromIP($this->ip), NinjaUtils::getBinNameFromIP($this->ip), $this->version);
+                NinjaUtils::assemble(
+                    NinjaUtils::getAsmNameFromIP($this->ip),
+                    NinjaUtils::getBinNameFromIP($this->ip),
+                    $this->version
+                );
             case 'bin':
                 NinjaUtils::makeExecutable($this->testBinFileLocation);
                 // run with server reference
                 // try and catch all errors and set errors as output.
                 try {
-                    $refVmOutput = NinjaUtils::runBin($this->testBinFileLocation, $this->refNjvmFileLocation, $this->arguments, $this->gcData);
+                    $refVmOutput = NinjaUtils::runBin(
+                        $this->testBinFileLocation,
+                        $this->refNjvmFileLocation,
+                        $this->arguments,
+                        $this->gcData
+                    );
                 } catch (Exception $e) {
                     $refVmOutput = $e->getMessage();
                 }
                 // run with user implementtion
                 NinjaUtils::makeExecutable($this->userNjvmFileLocation);
                 try {
-                    $userVmOutput = NinjaUtils::runBin($this->testBinFileLocation, $this->userNjvmFileLocation, $this->arguments, $this->gcData);
+                    $userVmOutput = NinjaUtils::runBin(
+                        $this->testBinFileLocation,
+                        $this->userNjvmFileLocation,
+                        $this->arguments,
+                        $this->gcData
+                    );
                 } catch (Exception $e) {
                     $userVmOutput = $e->getMessage();
                 }
