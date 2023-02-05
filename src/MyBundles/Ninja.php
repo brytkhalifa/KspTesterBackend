@@ -10,10 +10,6 @@ use Exception;
  */
 class Ninja
 {
-
-    private const ERROR_EXPRESSIONS = [
-        'My brain just exploded. I dont know what is wrong with you code. Maybe redeclaration of a local variable?'
-    ];
     private string $address;
     private string $ninjaFileName;
     private string $asmFileName;
@@ -23,21 +19,21 @@ class Ninja
     /**
      * __construct
      * creates the default names of the files based on the Ip address
-     * @param  string $ip The request from the router. 
-     * @param  int $version The request from the router. 
+     * @param  string $ip The request from the router.
+     * @param  int $version The request from the router.
      */
     public function __construct(string $ip, int $version = 8)
     {
         $this->address = $ip;
         $this->version = $version;
         $this->ninjaFileName = NinjaUtils::attachNinjaExtension($this->address);
-        $this->asmFileName =  NinjaUtils::attachAsmExtension($this->address);
-        $this->binFileName =  NinjaUtils::attachBinExtension($this->address);
+        $this->asmFileName = NinjaUtils::attachAsmExtension($this->address);
+        $this->binFileName = NinjaUtils::attachBinExtension($this->address);
     }
 
     /**
      * compiles the ninja file to asm file and returns its content
-     * 
+     *
      * @param string $content
      * @return string the content of the asm file
      * @throws Exception
@@ -48,7 +44,7 @@ class Ninja
         FileUtils::writeToFile($content, $this->getNinjaFileFullPath());
         // compile the nj file to asm
         NinjaUtils::compile($this->getNinjaFileFullPath(), $this->getAsmFileFullPath(), $this->version);
-        // return contents of the asm file 
+        // return contents of the asm file
         return NinjaUtils::getAsmContents($this->getAsmFileFullPath(), $this->version, $shortenCode);
     }
 
@@ -112,6 +108,11 @@ class Ninja
     {
         NinjaUtils::assemble($this->getAsmFileFullPath(), $this->getBinFileFullPath(), $this->version);
         NinjaUtils::makeExecutable($this->getBinFileFullPath());
-        return NinjaUtils::runBin($this->getBinFileFullPath(), NinjaUtils::getNinjaRefFile($this->version), "1 2 3 4 5 6 7 8 9 10", []);
+        return NinjaUtils::runBin(
+            $this->getBinFileFullPath(),
+            NinjaUtils::getNinjaRefFile($this->version),
+            "1 2 3 4 5 6 7 8 9 10",
+            []
+        );
     }
 }

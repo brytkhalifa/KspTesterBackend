@@ -1,0 +1,87 @@
+type Point = record {
+  Integer x;
+  Integer y;
+};
+type Vector = record  {
+  Integer x; 
+  Integer y; 
+};
+
+type Line = record {
+  Vector supportVector;
+  Vector directionVector;
+};
+type Slope = record {
+  Integer y;
+  Integer x;
+};
+void main(){
+  local Point a;
+  local Point b; 
+  local Line line;
+  a = new(Point); 
+  b = new(Point); 
+  line = new(Line);
+  setPoint(a, readInteger(), readInteger());
+  setPoint(b, readInteger(), readInteger());
+  displayLabel("A");
+  displayPoint(a);
+  writeNextLine();
+  displayLabel("B");
+  displayPoint(b);
+  writeNextLine();
+  getLine(line, a,b);
+  displayLabel("g(x)");
+  displayLine(line);
+  writeNextLine();
+}
+void writeNextLine() {
+  writeCharacter('\n');
+}
+void displayLabel(String label) {
+  writeString(label);
+  writeString(" = ");
+}
+String displayLine(Line line) {
+  displayVector(line.supportVector);
+  writeString(" + λ");
+  displayVector(line.directionVector);
+}
+String displayPoint(Point point) {
+  writeString("[");
+  writeInteger(point.x);
+  writeString(", ");
+  writeInteger(point.y); 
+  writeCharacter(']');
+}
+String displayVector(Vector vector) {
+  writeCharacter('[');
+  writeInteger(vector.x);
+  writeString(", ");
+  writeInteger((vector.y));
+  writeCharacter(']');
+}
+void setPoint(Point point, Integer a, Integer b) {
+  point.x = a; 
+  point.y  = b; 
+}
+void getLine(Line line, Point a, Point b) {
+  local Point zero;
+  zero = new (Point);
+  zero.x = 0; 
+  zero.y = 0; 
+  line.supportVector = new (Vector);
+  line.directionVector = new (Vector);
+  getVector(line.supportVector, a, zero);
+  getVector(line.directionVector, a, b);
+}
+
+void getVector (Vector vector, Point from, Point to){
+  vector.x = from.x - to.x;
+  vector.y = from.y - to.y; 
+}
+void getSlope(Slope slope, Point from, Point to){
+
+  slope.x = from.x - to.x;
+  slope.y = from.y - to.y; 
+}
