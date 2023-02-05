@@ -5,6 +5,7 @@ namespace App\MyBundles;
 use App\MyBundles\Executer;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Exception;
+
 class NinjaUtils
 {
     private const NJ_CODE_START_V7_TO_V8 = 110;
@@ -291,7 +292,21 @@ class NinjaUtils
         return self::REF_FILE_PATH . $version;
     }
 
-    public static function diff(string $a, string $b) {
+    public static function diff(string $a, string $b)
+    {
         //TODO
+    }
+    public static function generateFileNameFromIp(string $ip)
+    {
+        return md5($ip);
+    }
+    /**
+     * Summary of generateRandomFileName
+     * @param string $extension
+     * @return string
+     */
+    public static function generateRandomFileName(string $extension = '.txt')
+    {
+        return (md5(random_bytes(10)) . $extension);
     }
 }
