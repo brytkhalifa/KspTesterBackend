@@ -9,7 +9,7 @@ class FileUtils
 
 
     /**
-     * Reads the content of any file and returns it as an array containing the lines. 
+     * Reads the content of any file and returns it as an array containing the lines.
      *
      * @param  string $file the full path of the file to be read.
      * @return array contains the content of the file.
@@ -30,7 +30,7 @@ class FileUtils
      * @param  string $content The content to write into the file.
      * @param  string $file the full path of the file.
      * @return boolean true when writing was successfull.
-     * @throws Exception when writing was unsuccessfull. 
+     * @throws Exception when writing was unsuccessfull.
      */
     public static function writeToFile(string $content, string $file)
     {

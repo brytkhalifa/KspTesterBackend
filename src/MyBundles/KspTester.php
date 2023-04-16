@@ -8,24 +8,27 @@ use Symfony\Component\Process\Process;
 
 class KspTester
 {
-    private string $extension;
-    private int $version;
-    private string $testBinFileLocation;
-    private string $ip;
-    private string $arguments;
-    private array $gcData;
-    private string $userNjvmFileLocation;
-    private string $refNjvmFileLocation;
+    private string $extension; // extension of the uploaded file
+    private int $version; // version of the test case
+    private string $testBinFileLocation; // the location of the binary file (can be user or server provided)
+    private string $ip; // the md5 representation of the users ip address
+    private string $arguments; // arguments for the tester
+    private array $gcData; // garbage collection data.
+    private string $userNjvmFileLocation; // the location of the uploaded user njvm
+    private string $refNjvmFileLocation; // the location of the server reference njvm
 
     public function __construct(int $version, string $ip)
     {
         $this->version = $version;
         $this->ip = $ip;
         $this->gcData = [];
-        $this->arguments = '1 2 3 4 5 6 7 8 9'; // set default arguments.
+        $this->arguments = NinjaUtils::DEFAULT_ARGUMENTS; // set default arguments.
         $this->refNjvmFileLocation = NinjaUtils::REF_FILE_PATH . $version;
     }
-
+    /**
+     * Sets the user testfile as the testfile for the tester
+     * @param UploadedFile $testFile the uploaded testfile
+     */
     public function withUserTestFile(UploadedFile $testFile)
     {
         $this->validateTestFile($testFile);
@@ -36,13 +39,20 @@ class KspTester
         $this->testBinFileLocation = NinjaUtils::getBinNameFromIP($this->ip);
         return $this;
     }
+    /**
+     * Sets the server test file as the testfile for the tester
+     * @param UploadedFile $testFile the server testfile
+     */
     public function withServerTestFile(UploadedFile $testFile)
     {
         $this->validateTestFile($testFile);
         $this->testBinFileLocation = $testFile->getRealPath();
         return $this;
     }
-
+    /**
+     * Sets the uploaded user njvm file.
+     * @param UploadedFile $njvmFile the server testfile
+     */
     public function withUserNjvmFile(UploadedFile $njvmFile)
     {
         $this->validateNjvmFile($njvmFile);
@@ -51,13 +61,18 @@ class KspTester
     }
 
 
-
+    /**
+     * @param string $arguments set the arguments for the tester
+     */
     public function withArguments(string $arguments)
     {
         $this->arguments = $arguments;
         return $this;
     }
-
+    /**
+     * If version is 8, adds garbage collection data to the tester
+     * @param array $gcData
+     */
     public function withGarbageCollectionData(array $gcData)
     {
         if ($this->version !== 8) {
@@ -66,6 +81,9 @@ class KspTester
         $this->gcData = $gcData;
         return $this;
     }
+    /**
+     * Runs the ksp tester based on the information in the instance.
+     */
     public function test()
     {
         $refVmOutput = ''; // container for reference Output
@@ -117,32 +135,44 @@ class KspTester
         $similar = strcmp($userVmOutput, $refVmOutput) === 0;
         return ['implementOutput' => $userVmOutput, 'referenceOutput' => $refVmOutput, 'similar' => $similar];
     }
+    /**
+     * Returns the server test files based on the version selected
+     * @param int $version
+     */
 
-    public function getFileNameByVersion()
+    public static function getFileNameByVersion(int $version)
     {
         $fileStr = Executer::executeFromCommandLine(
             'ls "$MY_VAR" | grep "$MY_VAR2" "$MY_VAR3"',
             10,
             [
-                'MY_VAR' => '../resources/ksp_tester/bin_test_files',
+                'MY_VAR' => NinjaUtils::SERVER_TEST_FILES_DIR,
                 'MY_VAR2' => "-iE",
-                'MY_VAR3' => "^v$this->version.*"
+                'MY_VAR3' => "^v$version.*"
             ]
         );
         return array_filter(explode("\n", $fileStr));
     }
+    /**
+     * validates the njvm file.
+     * @param UploadedFile $njvmFile
+     */
     private function validateNjvmFile(UploadedFile $njvmFile)
     {
         if (NinjaUtils::isValidFileSize($njvmFile) === false) {
             throw new Exception('File too large');
         }
     }
+    /**
+     * validates the uploaded njvm file.
+     * @param UploadedFile $testFile
+     */
     private function validateTestFile(UploadedFile $testFile)
     {
         if (($this->extension = NinjaUtils::isValidExtension($testFile)) === false) {
             throw new Exception("Invalid extention  $testFile");
         }
-        // check size of testfile. 
+        // check size of testfile.
         if (NinjaUtils::isValidFileSize($testFile) === false) {
             throw new Exception('File too large');
         }
