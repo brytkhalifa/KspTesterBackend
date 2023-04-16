@@ -29,7 +29,7 @@ class KspTesterController extends AbstractController
     public function downloadAsm(Request $request, int $version)
     {
         try {
-            $res = KspTester::getFileNameByVersion($version);
+            $res = KspTester::getTestFileNamesByVersion($version);
             return new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);

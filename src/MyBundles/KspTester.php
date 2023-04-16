@@ -140,7 +140,7 @@ class KspTester
      * @param int $version
      */
 
-    public static function getFileNameByVersion(int $version)
+    public static function getTestFileNamesByVersion(int $version)
     {
         $fileStr = Executer::executeFromCommandLine(
             'ls "$MY_VAR" | grep "$MY_VAR2" "$MY_VAR3"',
