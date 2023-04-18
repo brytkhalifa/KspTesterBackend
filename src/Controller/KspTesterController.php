@@ -29,9 +29,7 @@ class KspTesterController extends AbstractController
     public function downloadAsm(Request $request, int $version)
     {
         try {
-            $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
-            $tester = new KspTester($version, $ip);
-            $res = $tester->getFileNameByVersion();
+            $res = KspTester::getTestFileNamesByVersion($version);
             return new JsonResponse($res);
         } catch (Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 400);
@@ -47,7 +45,7 @@ class KspTesterController extends AbstractController
             $userTestFile = $request->files->get('testFile');
             $userNjvmFile = $request->files->get('njvmFile');
 
-            $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
+            $arguments = $request->get('arguments') ?: NinjaUtils::DEFAULT_ARGUMENTS;
 
             if (isset($userTestFile) === false) {
                 throw new Exception('Test File not provided');
@@ -71,12 +69,11 @@ class KspTesterController extends AbstractController
     }
 
     #[Route('/test/own/withGC/{version}/{stack}/{heap}/{gcstats}/{gcpurge}',
-    name: 'Own Test with Garbage Collector', methods: ['POST'])]
+        name: 'Own Test with Garbage Collector', methods: ['POST'])]
 
     public function testWithGC(
         Request $request, int $version, int $stack = 64, int $heap = 8192, int $gcstats = 0, int $gcpurge = 0
-    )
-    {
+    ) {
         try {
             $userTestFile = $request->files->get('testFile');
 
@@ -88,7 +85,7 @@ class KspTesterController extends AbstractController
                 throw new Exception('Reference File not provided');
             }
             $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
-            $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
+            $arguments = $request->get('arguments') ?: NinjaUtils::DEFAULT_ARGUMENTS;
 
             $data = [
                 'version' => $version,
@@ -113,11 +110,10 @@ class KspTesterController extends AbstractController
     }
 
     #[Route('/testServerFiles/withGC/{version}/{stack}/{heap}/{gcstats}/{gcpurge}',
-    name: 'Test server files with Garbage Collector', methods: ['POST'])]
+        name: 'Test server files with Garbage Collector', methods: ['POST'])]
     public function testFunctionalityWithGC(
         Request $request, int $version, int $stack = 64, int $heap = 8192, int $gcstats = 0, int $gcpurge = 0
-    )
-    {
+    ) {
         try {
             $userNjvmFile = $request->files->get('njvmFile');
             $serverFiles = json_decode($request->get("serverTests")) ?: [];
@@ -126,7 +122,7 @@ class KspTesterController extends AbstractController
                 throw new Exception('Reference File not provided');
             }
             $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
-            $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
+            $arguments = $request->get('arguments') ?: NinjaUtils::DEFAULT_ARGUMENTS;
 
             $data = [
                 'version' => $version,
@@ -154,13 +150,13 @@ class KspTesterController extends AbstractController
     }
 
     #[Route('/testServerFiles/{version}',
-    name: 'Test server files without Garbage Collector', methods: ['POST'])]
+        name: 'Test server files without Garbage Collector', methods: ['POST'])]
     public function testAllFiles(Request $request, int $version)
     {
         try {
 
             $userNjvmFile = $request->files->get('njvmFile');
-            $arguments = $request->get('arguments') ?: '1 2 3 4 5 6 7 8 9';
+            $arguments = $request->get('arguments') ?: NinjaUtils::DEFAULT_ARGUMENTS;
             $serverFiles = json_decode($request->get("serverTests")) ?: [];
             // use logger like this $this->logger->info(implode("", $files));
             if (isset($userNjvmFile) === false) {

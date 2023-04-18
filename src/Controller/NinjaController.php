@@ -19,7 +19,7 @@ class NinjaController extends AbstractController
 
     #[Route('/compile/{version}/{shortenCode}', name: 'compile', methods: ['POST'])]
     /**
-     * Summary of compile
+     * Gets text containing ninja code and runs and returns the compiled asm text
      * @param Request $request
      * @param int $version
      * @param int $shortenCode $shortenCode if 1, inbuilt methods will be excluded from the asm code.
@@ -32,12 +32,11 @@ class NinjaController extends AbstractController
             if ($version <= 3 || $version > 8) {
                 throw new Exception("The selected version is not supported.");
             }
-            $body = ($request->toArray());
-            if (!array_key_exists('value', $body)) {
+            $njCode = $request->get('value');
+            if ($njCode === null) {
                 throw new Exception('No value to compile');
             }
 
-            $njCode = $body['value'];
             $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
 
             $ninja = new Ninja($ip, $version);
@@ -47,14 +46,14 @@ class NinjaController extends AbstractController
             $response->headers->set('Content-Type', 'text/plain');
             return $response;
         } catch (Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], 400);
+            return $this->json(['error' => $e->getMessage()], 400);
         }
     }
 
 
     #[Route('/files', name: 'Get File List', methods: ['GET'])]
     /**
-     * Summary of getTestFiles
+     * Returns the list of test files on the server
      * @param Request $request
      * @return JsonResponse
      */
@@ -64,17 +63,15 @@ class NinjaController extends AbstractController
             $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
             $ninja = new Ninja($ip);
             $testFiles = $ninja->getTestFilesList();
-            //var_dump($testFiles);
-            $response = new JsonResponse($testFiles);
-            return $response;
+            return $this->json($testFiles);
         } catch (Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], 400);
+            return $this->json(['error' => $e->getMessage()], 400);
         }
     }
 
     #[Route('/files/{filename}', name: 'Get a Test File', methods: ['GET'])]
     /**
-     * Summary of getTestFile
+     * Returns the content of a test file with the passed filename
      * @param string $filename
      * @return JsonResponse
      */
@@ -82,16 +79,15 @@ class NinjaController extends AbstractController
     {
         try {
             $fileContent = FileUtils::getContents(NinjaUtils::TEST_FILES_PATH . $filename);
-            $response = new JsonResponse(implode("", $fileContent));
-            return $response;
+            return $this->json(implode("", $fileContent));
         } catch (Exception $e) {
-            return new JsonResponse(['error' => $filename . " Existiert nicht"], 400);
+            return $this->json(['error' => $filename . " Existiert nicht"], 400);
         }
     }
 
     #[Route('/run/{version}', name: 'Run Code', methods: ['GET'])]
     /**
-     * Summary of runCode
+     * Runs the ninja code and returns the output of the virtual machine on success
      * @param Request $request
      * @param int $version
      * @return JsonResponse
@@ -101,17 +97,18 @@ class NinjaController extends AbstractController
         $ip = NinjaUtils::generateFileNameFromIp($request->getClientIp());
 
         $ninja = new Ninja($ip, $version);
+        $arguments = $request->get('arguments') ?: NinjaUtils::DEFAULT_ARGUMENTS;
         try {
-            $res = $ninja->runCode();
-            return new JsonResponse($res);
+            $res = $ninja->runCode($arguments);
+            return $this->json($res);
         } catch (Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], 400);
+            return $this->json(['error' => $e->getMessage()], 400);
         }
     }
 
     #[Route('/download/nj/{version}', name: 'Download ninja file', methods: ['GET'])]
     /**
-     * Summary of downloadNinja
+     * Prepares the users ninja file for download
      * @param Request $request
      * @param int $version
      * @return BinaryFileResponse|JsonResponse
@@ -130,13 +127,13 @@ class NinjaController extends AbstractController
             );
             return $response;
         } catch (Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], 400);
+            return $this->json(['error' => $e->getMessage()], 400);
         }
     }
 
     #[Route('/download/asm/{version}', name: 'Download Assembler file', methods: ['GET'])]
     /**
-     * Summary of downloadAsm
+     *  Prepares the users asm file for download
      * @param Request $request
      * @param int $version
      * @return BinaryFileResponse|JsonResponse
@@ -155,13 +152,13 @@ class NinjaController extends AbstractController
             );
             return $response;
         } catch (Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], 400);
+            return $this->json(['error' => $e->getMessage()], 400);
         }
     }
 
     #[Route('/download/bin/{version}', name: 'Download BinaryFile file', methods: ['GET'])]
     /**
-     * Summary of downloadBin
+     *  Prepares the users bin file for download
      * @param Request $request
      * @param int $version
      * @return BinaryFileResponse|JsonResponse
@@ -180,7 +177,7 @@ class NinjaController extends AbstractController
             );
             return $response;
         } catch (Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], 400);
+            return $this->json(['error' => $e->getMessage()], 400);
         }
     }
 }

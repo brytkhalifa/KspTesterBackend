@@ -10,11 +10,11 @@ use Exception;
  */
 class Ninja
 {
-    private string $address;
-    private string $ninjaFileName;
-    private string $asmFileName;
-    private string $binFileName;
-    private int $version;
+    private string $address; // the md5 representation of the ip address
+    private string $ninjaFileName; // the ninja file name
+    private string $asmFileName; // the assembler file name
+    private string $binFileName; // the binary file name.
+    private int $version; // the version used to compile the ninja file
 
     /**
      * __construct
@@ -47,7 +47,9 @@ class Ninja
         // return contents of the asm file
         return NinjaUtils::getAsmContents($this->getAsmFileFullPath(), $this->version, $shortenCode);
     }
-
+    /**
+     * Returns the names of all ninja test files on the server
+     */
     public function getTestFilesList()
     {
         return NinjaUtils::getDirectoryContents(NinjaUtils::TEST_FILES_PATH);
@@ -103,15 +105,17 @@ class Ninja
         return NinjaUtils::BIN_FILE_PATH . $this->binFileName;
     }
 
-
-    public function runCode()
+    /**
+     * @param string $arguments The arguments needed to run the code
+     */
+    public function runCode(string $arguments = NinjaUtils::DEFAULT_ARGUMENTS)
     {
         NinjaUtils::assemble($this->getAsmFileFullPath(), $this->getBinFileFullPath(), $this->version);
         NinjaUtils::makeExecutable($this->getBinFileFullPath());
         return NinjaUtils::runBin(
             $this->getBinFileFullPath(),
             NinjaUtils::getNinjaRefFile($this->version),
-            "1 2 3 4 5 6 7 8 9 10",
+            $arguments,
             []
         );
     }
